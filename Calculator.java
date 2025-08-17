@@ -6,4 +6,5 @@ public interface Calculator extends Remote {
     List<Integer> getStack() throws RemoteException;
     boolean isEmpty() throws RemoteException;
     int pop() throws RemoteException;
+    void pushOperation(String operator) throws RemoteException;
 }
