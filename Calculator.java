@@ -5,4 +5,5 @@ public interface Calculator extends Remote {
     void pushValue(int val) throws RemoteException;
     List<Integer> getStack() throws RemoteException;
     boolean isEmpty() throws RemoteException;
+    int pop() throws RemoteException;
 }

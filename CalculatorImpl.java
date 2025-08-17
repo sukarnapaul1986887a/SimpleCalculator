@@ -35,4 +35,17 @@ public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
             lock.unlock();
         }
     }
+
+    @Override
+    public int pop() throws RemoteException {
+        lock.lock();
+        try {
+            if (stack.isEmpty()) {
+                throw new RemoteException("pop called on empty stack");
+            }
+            return stack.pop();
+        } finally {
+            lock.unlock();
+        }
+    }
 }
