@@ -13,7 +13,7 @@ public class CalculatorServer {
                 System.out.println("RMI registry  likely already running: " + exp.getMessage());
             }
 
-            Calculator impl = new CalculatorImpl();
+            Calculator impl = new CalculatorImplementation();
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind(BIND_NAME, impl);
         } catch (Exception exp) {

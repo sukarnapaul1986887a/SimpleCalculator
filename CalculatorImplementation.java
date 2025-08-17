@@ -3,11 +3,18 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
+/**
+ * Thread-safe implementation of the Calculator service.
+ *
+ * Concurrency notes:
+ * - A single shared stack is maintained across all clients (as per base spec).
+ * - Methods use a ReentrantLock to guard stack mutations.
+ */
+public class CalculatorImplementation extends UnicastRemoteObject implements Calculator {
     private final Deque<Integer> stack = new ArrayDeque<>();
     private final ReentrantLock lock = new ReentrantLock();
 
-    public CalculatorImpl() throws RemoteException {
+    public CalculatorImplementation() throws RemoteException {
         super();
     }
     
@@ -80,10 +87,10 @@ public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
                 result = values.stream().max(Integer::compareTo).get();
                 break;
             case "gcd":
-                result = values.stream().reduce(values.get(0), CalculatorImpl::gcd);
+                result = values.stream().reduce(values.get(0), CalculatorImplementation::gcd);
                 break;
             case "lcm":
-                result = values.stream().reduce(values.get(0), CalculatorImpl::lcm);
+                result = values.stream().reduce(values.get(0), CalculatorImplementation::lcm);
                 break;
             default:
                 throw new RemoteException("Unsupported operator: " + operator);
@@ -98,6 +105,7 @@ public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
         }
     }
 
+    /** Greatest common divisor using Euclid's algorithm. */
     private static int gcd(int a, int b) {
         a = Math.abs(a); b = Math.abs(b);
         if (a == 0) return b;
@@ -110,17 +118,23 @@ public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
         return a;
     }
 
+    /** Least common multiple computed via gcd */
     private static int lcm(int a, int b) {
         a = Math.abs(a); b = Math.abs(b);
         if (a == 0 || b == 0) return 0;
         long prod = (long) a * (long) b;
         int g = gcd(a, b);
         long l = prod / g;
-        // Clamp to int range if necessary (assignment assumes sensible ranges)
-        if (l > Integer.MAX_VALUE) {
-            // For robustness, cap; alternatively, throw RemoteException
-            return Integer.MAX_VALUE;
-        }
         return (int) l;
+    }
+
+    @Override
+    public synchronized int delayPop(int millis) throws RemoteException {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return pop();
     }
 }
