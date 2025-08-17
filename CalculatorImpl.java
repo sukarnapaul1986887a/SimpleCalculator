@@ -23,6 +23,16 @@ public class CalculatorImpl extends UnicastRemoteObject implements Calculator {
 
     @Override
     public synchronized List<Integer> getStack() throws RemoteException {
-        return new ArrayList<>(stack); // return a  copy for safety
+        return new ArrayList<>(stack);
+    }
+
+    @Override
+    public boolean isEmpty() throws RemoteException {
+        lock.lock();
+        try {
+            return stack.isEmpty();
+        } finally {
+            lock.unlock();
+        }
     }
 }
